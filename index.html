@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>EduScience — CHSE Class 11</title>
+<meta name="theme-color" content="#07090E"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#07090E;--c1:#0D1018;--c2:#141820;--c3:#1B2030;--bd:rgba(255,255,255,0.07);--tx:#E2E8F4;--mt:#7A8899;--or:#FF6B35;--gn:#10B981;--rd:#FF4757;--pu:#A855F7;}
+html{height:100%;overflow:hidden;}
+body{height:100%;font-family:'Sora',sans-serif;background:var(--bg);color:var(--tx);overflow:hidden;}
+#app{position:fixed;inset:0;max-width:430px;margin:0 auto;background:var(--bg);overflow:hidden;}
+/* Each screen fills app, scrolls independently */
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:none;}
+.screen.active{display:block;}
+/* Special screens */
+#scr-chat{display:none;flex-direction:column;}
+#scr-chat.active{display:flex;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--c3);}
+.anim{animation:fd .22s ease;}
+@keyframes fd{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+.card{background:var(--c1);border:1px solid var(--bd);border-radius:16px;}
+.card2{background:var(--c2);border:1px solid var(--bd);border-radius:12px;}
+/* INPUTS — 16px prevents iOS zoom/jump */
+input,textarea,select{
+  background:var(--c2);border:1.5px solid var(--bd);border-radius:10px;
+  padding:12px 15px;color:var(--tx);font-family:'Sora',sans-serif;
+  font-size:16px;outline:none;width:100%;
+  transition:border-color .2s;-webkit-appearance:none;
+  transform:translateZ(0);/* GPU layer prevents jump */
+}
+input:focus,textarea:focus,select:focus{border-color:var(--or);}
+input::placeholder,textarea::placeholder{color:var(--mt);}
+textarea{resize:none;min-height:88px;}
+select{cursor:pointer;}
+.btn{background:var(--or);color:#fff;border:none;border-radius:12px;padding:13px;font-family:'Sora',sans-serif;font-weight:700;font-size:14px;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:filter .18s;}
+.btn:hover{filter:brightness(1.1);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.ghost{background:var(--c2);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px 12px;font-family:'Sora',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;white-space:nowrap;}
+.ghost:hover{background:var(--c3);}
+.redbtn{background:rgba(255,71,87,.1);color:var(--rd);border:1px solid rgba(255,71,87,.2);border-radius:9px;padding:7px 10px;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.hdr{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:13px 18px;background:rgba(7,9,14,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);}
+/* Bottom nav — stays at bottom, not fixed to viewport */
+.bnav{display:flex;background:rgba(7,9,14,.97);border-top:1px solid var(--bd);padding:8px 0 20px;flex-shrink:0;}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px;border:none;background:none;color:var(--mt);font-family:'Sora',sans-serif;font-size:10px;font-weight:600;cursor:pointer;}
+.ni.on{color:var(--or);}
+.pbar{height:4px;background:var(--c3);border-radius:2px;overflow:hidden;}
+.pfill{height:100%;border-radius:2px;transition:width .5s ease;}
+.tag{display:inline-flex;align-items:center;background:rgba(255,107,53,.1);color:var(--or);border:1px solid rgba(255,107,53,.2);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;}
+/* Modal overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.sheet{background:var(--c1);border-radius:24px 24px 0 0;border:1px solid var(--bd);border-bottom:none;width:100%;max-width:430px;padding:20px 20px 32px;max-height:85vh;overflow-y:auto;animation:su .25s ease;}
+@keyframes su{from{transform:translateY(36px);opacity:0;}to{transform:none;opacity:1;}}
+.pill{height:4px;width:38px;background:var(--c3);border-radius:2px;margin:0 auto 18px;}
+.cfmbg{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;display:none;align-items:center;justify-content:center;padding:24px;}
+.cfmbg.open{display:flex;}
+.cfmbox{background:var(--c1);border:1px solid rgba(255,71,87,.25);border-radius:20px;padding:28px 22px;width:100%;max-width:360px;text-align:center;}
+.vrow{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:11px;cursor:pointer;transition:background .13s;}
+.vrow:hover{background:var(--c2);}
+.vthumb{width:78px;height:50px;border-radius:8px;background:var(--c3);overflow:hidden;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center;}
+.vthumb img{width:100%;height:100%;object-fit:cover;}
+.playov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.42);border-radius:8px;}
+.bubble{max-width:76%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5;}
+.bubble.me{background:var(--or);color:#fff;border-bottom-right-radius:4px;align-self:flex-end;}
+.bubble.them{background:var(--c2);color:var(--tx);border-bottom-left-radius:4px;}
+.qopt{background:var(--c2);border:2px solid var(--bd);border-radius:10px;padding:12px 14px;color:var(--tx);font-family:'Sora',sans-serif;font-size:13px;cursor:pointer;width:100%;text-align:left;transition:all .18s;}
+.qopt:hover{border-color:var(--or);}
+.qopt.right{border-color:var(--gn);background:rgba(16,185,129,.1);}
+.qopt.wrong{border-color:var(--rd);background:rgba(255,71,87,.1);}
+.subj{border-radius:20px;padding:20px;cursor:pointer;position:relative;overflow:hidden;transition:transform .18s;border:1px solid rgba(255,255,255,.07);}
+.subj:hover{transform:scale(1.015);}
+.subj::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.2);}
+.subj>*{position:relative;z-index:1;}
+.empty{text-align:center;padding:52px 16px;color:var(--mt);}
+.emicon{font-size:46px;margin-bottom:12px;}
+iframe{display:block;}
+/* Chat layout — key fix */
+#scr-chat{height:100%;}
+#chat-messages{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;display:flex;flex-direction:column;gap:10px;}
+#chat-input-area{padding:10px 14px 16px;border-top:1px solid var(--bd);display:flex;gap:8px;background:var(--bg);flex-shrink:0;}
+/* Pages inside student that scroll */
+#pg-home,#pg-profile{overflow-y:auto;flex:1;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ SCREEN: LOGIN ═══ -->
+  <div class="screen active" id="scr-login">
+    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-100px;left:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,53,.12) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="position:absolute;bottom:-80px;right:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(0,194,224,.08) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="text-align:center;margin-bottom:36px;">
+        <div style="width:80px;height:80px;border-radius:26px;background:linear-gradient(135deg,#FF6B35,#FF9A5C);display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 16px;box-shadow:0 20px 48px rgba(255,107,53,.3);">🔬</div>
+        <h1 style="font-size:32px;font-weight:800;letter-spacing:-1.5px;">Edu<span style="color:var(--or);">Science</span></h1>
+        <p style="color:var(--mt);font-size:12px;margin-top:6px;">CHSE Odisha · Class 11 Science</p>
+        <div style="display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
+          <span class="tag" style="font-size:10px;">∑ Math</span>
+          <span class="tag" style="font-size:10px;">⚡ Physics</span>
+          <span class="tag" style="font-size:10px;">⚗️ Chemistry</span>
+        </div>
+      </div>
+      <div class="card" style="width:100%;padding:22px;">
+        <h2 style="font-size:17px;font-weight:700;margin-bottom:5px;">Student Login</h2>
+        <p style="color:var(--mt);font-size:13px;margin-bottom:18px;">Google account ଦ୍ୱାରା login କରନ୍ତୁ</p>
+        <button class="btn" id="btn-student" style="background:#fff;color:#111;font-weight:700;margin-bottom:12px;">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+        <div style="text-align:center;color:var(--mt);font-size:11px;margin:10px 0;">─── or ───</div>
+        <button class="ghost" id="btn-open-gate" style="width:100%;justify-content:center;padding:12px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--pu)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Admin Panel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: SETUP ═══ -->
+  <div class="screen" id="scr-setup">
+    <div style="min-height:100vh;display:flex;flex-direction:column;padding:64px 24px 32px;">
+      <div style="flex:1;">
+        <div style="font-size:36px;margin-bottom:12px;">👤</div>
+        <h1 style="font-size:24px;font-weight:800;margin-bottom:6px;">Profile Setup</h1>
+        <p style="color:var(--mt);font-size:13px;margin-bottom:28px;">ଏକ ଥର ଭର୍ତ୍ତି କରନ୍ତୁ</p>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <label style="font-size:12px;font-weight:600;color:var(--mt);display:block;margin-bottom:7px;">Full Name</label>
+            <input id="inp-name" type="text" placeholder="ଆପଣଙ୍କ ପୂରା ନାଁ" autocomplete="name"/>
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;color:var(--mt);display:block;margin-bottom:7px;">Email</label>
+            <input id="inp-email" type="email" placeholder="yourname@gmail.com" autocomplete="email"/>
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;color:var(--mt);display:block;margin-bottom:7px;">Phone</label>
+            <input id="inp-phone" type="tel" placeholder="+91 xxxxxxxxxx" autocomplete="tel"/>
+          </div>
+        </div>
+      </div>
+      <button class="btn" id="btn-setup-done" style="margin-top:24px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Continue
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: WELCOME ═══ -->
+  <div class="screen" id="scr-welcome">
+    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(255,107,53,.1) 0%,transparent 60%);pointer-events:none;"></div>
+      <div style="font-size:80px;margin-bottom:14px;">🎉</div>
+      <p style="color:var(--or);font-weight:700;font-size:12px;letter-spacing:3px;margin-bottom:8px;text-transform:uppercase;">Welcome to EduScience</p>
+      <h1 style="font-size:32px;font-weight:800;line-height:1.15;margin-bottom:12px;">ନମସ୍କାର,<br/><span id="welcome-name" style="color:var(--or);"></span>!</h1>
+      <p style="color:var(--mt);font-size:13px;line-height:1.8;max-width:270px;margin:0 auto 28px;">CHSE Class 11 Science ର ତୁମ journey ଆଜିଠୁ 🚀</p>
+      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:28px;">
+        <div class="card2" style="padding:11px 8px;text-align:center;flex:1;"><div style="font-size:18px;">🎯</div><div style="font-size:9px;color:var(--mt);margin-top:4px;font-weight:600;">Lectures</div></div>
+        <div class="card2" style="padding:11px 8px;text-align:center;flex:1;"><div style="font-size:18px;">🤖</div><div style="font-size:9px;color:var(--mt);margin-top:4px;font-weight:600;">AI Summary</div></div>
+        <div class="card2" style="padding:11px 8px;text-align:center;flex:1;"><div style="font-size:18px;">💬</div><div style="font-size:9px;color:var(--mt);margin-top:4px;font-weight:600;">Group Chat</div></div>
+        <div class="card2" style="padding:11px 8px;text-align:center;flex:1;"><div style="font-size:18px;">📝</div><div style="font-size:9px;color:var(--mt);margin-top:4px;font-weight:600;">Quiz</div></div>
+      </div>
+      <button class="btn" id="btn-welcome-go" style="max-width:240px;">Start Learning →</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: STUDENT ═══ -->
+  <div class="screen" id="scr-student" style="display:none;flex-direction:column;">
+    <!-- Dynamic content injected here -->
+    <div id="student-content" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
+    <nav class="bnav" id="student-bnav">
+      <button class="ni on" data-nav="home">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
+      </button>
+      <button class="ni" data-nav="chat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Chat
+      </button>
+      <button class="ni" data-nav="profile">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
+      </button>
+    </nav>
+  </div>
+
+  <!-- ═══ SCREEN: CHAT (separate to keep input stable) ═══ -->
+  <div class="screen" id="scr-chat">
+    <div class="hdr"><h2 style="font-size:17px;font-weight:700;">Group Chat</h2><div style="width:30px;"></div></div>
+    <div id="chat-tabs" style="display:flex;gap:7px;padding:10px 14px;border-bottom:1px solid var(--bd);overflow-x:auto;flex-shrink:0;">
+      <button class="chat-tab-btn active" data-grp="mathematics" style="display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;border:none;cursor:pointer;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;white-space:nowrap;background:#FF6B35;color:#fff;">∑ Mathematics</button>
+      <button class="chat-tab-btn" data-grp="physics" style="display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;border:none;cursor:pointer;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;white-space:nowrap;background:var(--c2);color:var(--mt);">⚡ Physics</button>
+      <button class="chat-tab-btn" data-grp="chemistry" style="display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;border:none;cursor:pointer;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;white-space:nowrap;background:var(--c2);color:var(--mt);">⚗️ Chemistry</button>
+    </div>
+    <div id="chat-messages" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;display:flex;flex-direction:column;gap:10px;">
+      <div style="text-align:center;color:var(--mt);font-size:13px;margin-top:50px;"><div style="font-size:40px;margin-bottom:10px;">💬</div>ଏହି group ରେ conversation ଆରମ୍ଭ କର!</div>
+    </div>
+    <!-- Input area — NOT fixed, part of flex column flow -->
+    <div id="chat-input-area" style="padding:10px 14px 16px;border-top:1px solid var(--bd);display:flex;gap:8px;background:var(--bg);flex-shrink:0;">
+      <input id="chat-input" type="text" placeholder="Message mathematics group..." autocomplete="off" style="flex:1;"/>
+      <button id="btn-send" style="width:44px;height:44px;border-radius:12px;border:none;background:#FF6B35;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div class="bnav" id="chat-bnav">
+      <button class="ni" data-nav="home">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
+      </button>
+      <button class="ni on" data-nav="chat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Chat
+      </button>
+      <button class="ni" data-nav="profile">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: ADMIN ═══ -->
+  <div class="screen" id="scr-admin"></div>
+
+  <!-- ═══ MODAL: PASSWORD GATE ═══ -->
+  <div class="overlay" id="modal-gate">
+    <div class="sheet">
+      <div class="pill"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <div style="width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#7C3AED,#A855F7);display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div><h3 style="font-size:16px;font-weight:700;">Admin Access</h3><p style="font-size:12px;color:var(--mt);">Password enter କରନ୍ତୁ</p></div>
+      </div>
+      <label style="font-size:12px;font-weight:600;color:var(--mt);display:block;margin-bottom:7px;">Password</label>
+      <div style="position:relative;margin-bottom:12px;">
+        <input id="gate-pass" type="password" placeholder="••••••••••" autocomplete="off" style="padding-right:44px;"/>
+        <button id="btn-gate-show" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;">👁️</button>
+      </div>
+      <div id="gate-err" style="display:none;background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.2);border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+        <p style="color:var(--rd);font-size:12px;">Wrong password. ଆଉ ଥରେ ଚେଷ୍ଟା କରନ୍ତୁ।</p>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="ghost" id="btn-gate-cancel" style="flex:1;justify-content:center;padding:12px;">Cancel</button>
+        <button class="btn" id="btn-gate-enter" style="flex:1;background:linear-gradient(135deg,#7C3AED,#A855F7);">Enter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: QUIZ ═══ -->
+  <div class="overlay" id="modal-quiz">
+    <div class="sheet" id="quiz-content"></div>
+  </div>
+
+  <!-- ═══ MODAL: CONFIRM DELETE ═══ -->
+  <div class="cfmbg" id="modal-confirm">
+    <div class="cfmbox">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,71,87,.12);border:1px solid rgba(255,71,87,.28);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--rd)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17" stroke-width="3" stroke-linecap="round"/></svg>
+      </div>
+      <h3 id="cfm-title" style="font-size:17px;font-weight:700;margin-bottom:8px;"></h3>
+      <p id="cfm-body" style="color:var(--mt);font-size:13px;margin-bottom:22px;line-height:1.6;"></p>
+      <div style="display:flex;gap:10px;">
+        <button class="ghost" id="btn-cfm-no" style="flex:1;justify-content:center;padding:12px;">Cancel</button>
+        <button id="btn-cfm-yes" style="flex:1;background:var(--rd);color:#fff;border:none;border-radius:10px;padding:12px;font-family:'Sora',sans-serif;font-weight:700;font-size:14px;cursor:pointer;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+const AP = "7278265006";
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const S = {
+  student: null,
+  subjects: {
+    mathematics:{label:"Mathematics",icon:"∑",color:"#FF6B35",grad:"linear-gradient(135deg,#FF6B35,#FF9A5C)",chapters:[]},
+    physics:    {label:"Physics",    icon:"⚡",color:"#00C2E0",grad:"linear-gradient(135deg,#0052D4,#00C2E0)",chapters:[]},
+    chemistry:  {label:"Chemistry",  icon:"⚗️",color:"#A855F7",grad:"linear-gradient(135deg,#7C3AED,#A855F7)", chapters:[]},
+  },
+  nav:"home",
+  selSub:null, selCh:null, selVid:null,
+  liked:{}, dl:{}, watched:{}, notes:{}, summs:{}, summing:false,
+  msgs:[], chatGrp:"mathematics",
+  profileTab:"liked",
+  adminPage:"home", adminSub:null,
+  adminChName:"", adminMode:"manual",
+  adminLinks:[{title:"",url:""}], adminYtUrl:"",
+  adminPublished:false, cfmData:null,
+  quizCh:null, quizCur:0, quizSel:null, quizRes:[], quizDone:false,
+  showNote:false,
+};
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function $(id){return document.getElementById(id);}
+function ytId(url){const m=url.match(/(?:v=|embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);return m?m[1]:null;}
+function nowTime(){return new Date().toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"});}
+function svgCheck(){return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;}
+function svgPlay(){return `<svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;}
+function svgBack(){return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--mt)" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>`;}
+function svgChev(){return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--mt)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`;}
+function svgTrash(){return `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>`;}
+function svgPlus(){return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;}
+function svgSpark(){return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;}
+function svgNote(){return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;}
+
+// ─── SCREEN SWITCHER ─────────────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  const el=$(id);
+  if(el) el.classList.add("active");
+}
+
+// ─── RENDER STUDENT CONTENT ──────────────────────────────────────────────────
+function renderStudent(){
+  const sc=$("scr-student");
+  sc.style.display="flex";
+  sc.style.flexDirection="column";
+  // show/hide bnav based on drill-down
+  const bnav=$("student-bnav");
+  bnav.style.display=(S.selVid||S.selCh||S.selSub)?"none":"flex";
+
+  if(S.selVid && S.selCh) return renderVideoPage();
+  if(S.selCh && S.selSub) return renderChapterPage();
+  if(S.selSub && S.nav==="home") return renderSubjectPage();
+  if(S.nav==="home") return renderHomePage();
+  if(S.nav==="profile") return renderProfilePage();
+  // chat has its own screen
+}
+
+function renderHomePage(){
+  const subs=S.subjects;
+  const total=Object.values(subs).reduce((a,s)=>a+s.chapters.reduce((b,c)=>b+c.videos.length,0),0);
+  const wc=Object.keys(S.watched).length;
+  const prog=total>0?Math.round((wc/total)*100):0;
+  $("student-content").innerHTML=`
+  <div class="anim" style="padding-bottom:20px;">
+    <div style="padding:22px 20px 14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <div>
+          <p style="color:var(--mt);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">CHSE Odisha · Class 11</p>
+          <h2 style="font-size:22px;font-weight:800;margin-top:2px;">ନମସ୍କାର, ${esc(S.student.name.split(" ")[0])}! 👋</h2>
+        </div>
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#FF6B35,#FF9A5C);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:#fff;">${esc(S.student.name[0].toUpperCase())}</div>
+      </div>
+      ${total>0?`<div class="card" style="padding:14px;margin-bottom:14px;"><div style="display:flex;justify-content:space-between;margin-bottom:7px;"><span style="font-size:12px;font-weight:600;color:var(--mt);">Overall Progress</span><span style="font-size:13px;font-weight:700;color:var(--or);">${prog}%</span></div><div class="pbar"><div class="pfill" style="width:${prog}%;background:linear-gradient(90deg,#FF6B35,#FF9A5C);"></div></div><p style="font-size:11px;color:var(--mt);margin-top:6px;">${wc} / ${total} lectures watched</p></div>`:""}
+      <div style="display:flex;gap:8px;margin-bottom:20px;">
+        <div class="card2" style="flex:1;padding:11px 6px;text-align:center;"><div style="font-size:19px;font-weight:800;color:#00C2E0;">${wc}</div><div style="font-size:10px;color:var(--mt);">Watched</div></div>
+        <div class="card2" style="flex:1;padding:11px 6px;text-align:center;"><div style="font-size:19px;font-weight:800;color:#FF4757;">${Object.keys(S.liked).length}</div><div style="font-size:10px;color:var(--mt);">Liked</div></div>
+        <div class="card2" style="flex:1;padding:11px 6px;text-align:center;"><div style="font-size:19px;font-weight:800;color:#A855F7;">3</div><div style="font-size:10px;color:var(--mt);">Subjects</div></div>
+      </div>
+      <p style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Subjects</p>
+      <div style="display:flex;flex-direction:column;gap:11px;">
+        ${Object.entries(subs).map(([k,s])=>{
+          const tv=s.chapters.reduce((a,c)=>a+c.videos.length,0);
+          const wv=s.chapters.reduce((a,c)=>a+c.videos.filter(v=>S.watched[v.id]).length,0);
+          const pct=tv>0?Math.round((wv/tv)*100):0;
+          return `<div class="subj" onclick="openSubject('${k}')" style="background:${s.grad};">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div><div style="font-size:30px;margin-bottom:6px;">${s.icon}</div><h3 style="font-size:20px;font-weight:800;color:#fff;">${s.label}</h3><p style="color:rgba(255,255,255,.7);font-size:12px;margin-top:2px;">${s.chapters.length>0?s.chapters.length+" Chapters · "+tv+" Videos":"Content coming soon"}</p></div>
+              <div style="text-align:right;"><div style="font-size:22px;font-weight:800;color:#fff;">${pct}%</div><div style="font-size:10px;color:rgba(255,255,255,.6);">Done</div></div>
+            </div>
+            ${tv>0?`<div style="margin-top:12px;height:3px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:#fff;"></div></div>`:""}
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+  </div>`;
+  setNavActive("home");
+}
+
+function renderSubjectPage(){
+  const sk=S.selSub, s=S.subjects[sk];
+  $("student-content").innerHTML=`
+  <div class="anim">
+    <div class="hdr"><button onclick="S.selSub=null;renderStudent();" style="background:none;border:none;cursor:pointer;">${svgBack()}</button><div style="text-align:center;"><h2 style="font-size:16px;font-weight:700;">${s.label}</h2><p style="font-size:10px;color:var(--mt);">${s.chapters.length} Chapters</p></div><div style="width:28px;"></div></div>
+    <div style="padding:14px;">
+      <div style="border-radius:18px;padding:20px;background:${s.grad};margin-bottom:16px;position:relative;overflow:hidden;"><div style="position:absolute;top:-8px;right:-8px;font-size:86px;opacity:.16;">${s.icon}</div><h3 style="font-size:26px;font-weight:800;color:#fff;">${s.label}</h3><p style="color:rgba(255,255,255,.72);font-size:12px;">Class 11 · CHSE Odisha</p></div>
+      ${s.chapters.length===0?`<div class="empty"><div class="emicon">📭</div><h3 style="font-size:15px;font-weight:700;margin-bottom:8px;">No chapters yet</h3><p style="font-size:13px;">Admin ଏଖନ content upload କରି ନାହାଁନ୍ତି।</p></div>`:`
+      <p style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">All Chapters</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${s.chapters.map((ch,i)=>{
+          const wv=ch.videos.filter(v=>S.watched[v.id]).length;
+          const pct=ch.videos.length>0?Math.round((wv/ch.videos.length)*100):0;
+          return `<div class="card" onclick="openChapter('${ch.id}')" style="padding:14px;cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:40px;height:40px;border-radius:12px;background:var(--c2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:${s.color};flex-shrink:0;">${String(i+1).padStart(2,"0")}</div>
+              <div style="flex:1;"><h4 style="font-size:14px;font-weight:600;margin-bottom:4px;">${esc(ch.name)}</h4><div style="display:flex;justify-content:space-between;"><span style="font-size:11px;color:var(--mt);">${ch.videos.length} Lectures</span><span style="font-size:11px;font-weight:700;color:${pct===100?"var(--gn)":"var(--mt)"};">${pct}%</span></div><div class="pbar" style="margin-top:5px;"><div class="pfill" style="width:${pct}%;background:${s.grad};"></div></div></div>
+              ${svgChev()}
+            </div>
+          </div>`;
+        }).join("")}
+      </div>`}
+    </div>
+  </div>`;
+}
+
+function renderChapterPage(){
+  const ch=S.selCh, sk=S.selSub, s=S.subjects[sk];
+  $("student-content").innerHTML=`
+  <div class="anim">
+    <div class="hdr"><button onclick="S.selCh=null;renderStudent();" style="background:none;border:none;cursor:pointer;">${svgBack()}</button><div style="text-align:center;flex:1;padding:0 8px;"><h2 style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(ch.name)}</h2><p style="font-size:10px;color:var(--mt);">${sk} · ${ch.videos.length} Videos</p></div><button class="ghost" onclick="openQuiz()" style="padding:7px 11px;font-size:11px;">Quiz</button></div>
+    ${ch.videos.length===0?`<div class="empty"><div class="emicon">📹</div><p style="font-size:13px;">Admin ଏଖନ videos upload କରି ନାହାଁନ୍ତି।</p></div>`:`
+    <div style="padding:12px;">
+      ${ch.videos.map((v,idx)=>`
+      <div class="vrow" onclick="openVideo('${v.id}')">
+        <div class="vthumb"><img src="${esc(v.thumb)}" alt="" onerror="this.style.display='none'"/><div class="playov">${S.watched[v.id]?`<div style="background:var(--gn);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;">${svgCheck()}</div>`:svgPlay()}</div></div>
+        <div style="flex:1;min-width:0;"><p style="font-size:13px;font-weight:600;line-height:1.35;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${idx+1}. ${esc(v.title)}</p><div style="display:flex;gap:8px;"><span style="font-size:11px;color:var(--mt);">⏱ ${esc(v.duration)}</span>${S.liked[v.id]?`<span style="font-size:10px;color:var(--rd);">❤️</span>`:""}</div></div>
+        ${svgChev()}
+      </div>`).join("")}
+    </div>`}
+  </div>`;
+}
+
+function renderVideoPage(){
+  const v=S.selVid, ch=S.selCh, sk=S.selSub;
+  const isL=!!S.liked[v.id], isD=!!S.dl[v.id];
+  const summ=S.summs[v.id];
+  $("student-content").innerHTML=`
+  <div class="anim">
+    <div class="hdr"><button onclick="S.selVid=null;S.showNote=false;renderStudent();" style="background:none;border:none;cursor:pointer;">${svgBack()}</button><div style="flex:1;padding:0 10px;"><h2 style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(v.title)}</h2><p style="font-size:10px;color:var(--mt);">${sk} · ${esc(ch.name)}</p></div></div>
+    <div style="aspect-ratio:16/9;background:#000;"><iframe width="100%" height="100%" src="${esc(v.url)}?autoplay=1&modestbranding=1&rel=0" frameborder="0" allow="autoplay;encrypted-media" allowfullscreen></iframe></div>
+    <div style="padding:14px 16px;">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:13px;line-height:1.4;">${esc(v.title)}</h3>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="ghost" onclick="toggleLike()" style="color:${isL?"var(--rd)":"var(--mt)"};border-color:${isL?"rgba(255,71,87,.3)":"var(--bd)"};">${isL?"❤️ Liked":"🤍 Like"}</button>
+        <button class="ghost" onclick="saveDl()" style="color:${isD?"var(--gn)":"var(--mt)"};border-color:${isD?"rgba(16,185,129,.3)":"var(--bd)"};">⬇️ ${isD?"Saved":"Download"}</button>
+        <button class="ghost" onclick="toggleNote()" style="color:${S.showNote?"var(--or)":"var(--mt)"};border-color:${S.showNote?"rgba(255,107,53,.3)":"var(--bd)"};">${svgNote()} Notes</button>
+      </div>
+      <div class="card2" style="padding:15px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:8px;"><div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#FF6B35,#FF9A5C);display:flex;align-items:center;justify-content:center;">${svgSpark()}</div><span style="font-size:13px;font-weight:700;">AI Summarizer</span></div>
+          <select id="lang-sel" style="width:auto;font-size:13px;padding:5px 8px;"><option value="odia">ଓଡ଼ିଆ</option><option value="hindi">हिंदी</option><option value="english">English</option></select>
+        </div>
+        ${summ?`<p style="font-size:13px;line-height:1.75;color:var(--mt);background:var(--c3);border-radius:9px;padding:11px 13px;">${esc(summ)}</p>`:`<button class="btn" onclick="doSummarize()" ${S.summing?"disabled":""} style="font-size:13px;padding:11px;">${S.summing?"⏳ Summary ତିଆରି ହେଉଛି...":"✨ ଏହି Video Summary ଦିଅ"}</button>`}
+      </div>
+      ${S.showNote?`<div class="card2" style="padding:15px;"><h4 style="font-size:13px;font-weight:700;margin-bottom:9px;">${svgNote()} Personal Notes</h4><textarea id="note-area" placeholder="ଏଠାରେ notes ଲେଖ...">${esc(S.notes[v.id]||"")}</textarea><button class="btn" onclick="saveNote()" style="margin-top:10px;padding:11px;font-size:13px;">Save Notes</button></div>`:""}
+    </div>
+  </div>`;
+}
+
+function renderProfilePage(){
+  const all=Object.values(S.subjects).flatMap(s=>s.chapters.flatMap(c=>c.videos));
+  const likedV=all.filter(v=>S.liked[v.id]);
+  const dlV=all.filter(v=>S.dl[v.id]);
+  function vlist(vids,empty){
+    if(!vids.length) return `<div class="empty" style="padding:24px 0;"><div style="font-size:34px;margin-bottom:8px;">📭</div><p>${empty}</p></div>`;
+    return vids.map(v=>`<div class="vrow" style="cursor:default;"><div class="vthumb"><img src="${esc(v.thumb)}" alt="" onerror="this.style.display='none'"/></div><div style="flex:1;min-width:0;"><p style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(v.title)}</p><p style="font-size:11px;color:var(--mt);">⏱ ${esc(v.duration)}</p></div></div>`).join("");
+  }
+  $("student-content").innerHTML=`
+  <div class="anim" style="padding-bottom:20px;">
+    <div class="hdr"><h2 style="font-size:17px;font-weight:700;">My Profile</h2><button class="redbtn" onclick="doLogout()" style="padding:6px 12px;">Logout</button></div>
+    <div style="padding:14px;">
+      <div class="card" style="padding:18px;display:flex;align-items:center;gap:13px;margin-bottom:13px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#FF6B35,#FF9A5C);display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:800;color:#fff;flex-shrink:0;">${esc(S.student.name[0].toUpperCase())}</div>
+        <div><h3 style="font-size:17px;font-weight:800;">${esc(S.student.name)}</h3><p style="font-size:12px;color:var(--mt);">${esc(S.student.email)}</p><p style="font-size:12px;color:var(--mt);">${esc(S.student.phone)}</p><span class="tag" style="margin-top:6px;display:inline-block;font-size:10px;">Class 11 · Science</span></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <div class="card2" style="flex:1;padding:10px 5px;text-align:center;"><div style="font-size:17px;font-weight:800;color:#00C2E0;">${Object.keys(S.watched).length}</div><div style="font-size:10px;color:var(--mt);">Watched</div></div>
+        <div class="card2" style="flex:1;padding:10px 5px;text-align:center;"><div style="font-size:17px;font-weight:800;color:#FF4757;">${likedV.length}</div><div style="font-size:10px;color:var(--mt);">Liked</div></div>
+        <div class="card2" style="flex:1;padding:10px 5px;text-align:center;"><div style="font-size:17px;font-weight:800;color:#10B981;">${dlV.length}</div><div style="font-size:10px;color:var(--mt);">Downloads</div></div>
+      </div>
+      <div style="display:flex;background:var(--c2);border-radius:11px;padding:3px;margin-bottom:13px;gap:3px;">
+        <button onclick="S.profileTab='liked';renderProfilePage();" style="flex:1;padding:9px;border-radius:8px;border:none;background:${S.profileTab==="liked"?"var(--c1)":"transparent"};color:${S.profileTab==="liked"?"var(--tx)":"var(--mt)"};font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">❤️ Liked</button>
+        <button onclick="S.profileTab='downloads';renderProfilePage();" style="flex:1;padding:9px;border-radius:8px;border:none;background:${S.profileTab==="downloads"?"var(--c1)":"transparent"};color:${S.profileTab==="downloads"?"var(--tx)":"var(--mt)"};font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">⬇️ Downloads</button>
+      </div>
+      ${S.profileTab==="liked"?vlist(likedV,"ଏଖନ like ହୋଇଥିବା video ନାହିଁ"):vlist(dlV,"ଏଖନ download ହୋଇଥିବା video ନାହିଁ")}
+    </div>
+  </div>`;
+  setNavActive("profile");
+}
+
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+function renderAdmin(){
+  showScreen("scr-admin");
+  const subs=S.subjects;
+  let html="";
+  const hdr=(back)=>`<div class="hdr">${back?`<button onclick="${back}" style="background:none;border:none;cursor:pointer;">${svgBack()}</button>`:`<div style="width:38px;"></div>`}<div style="text-align:center;"><h2 style="font-size:15px;font-weight:700;">🛡️ Admin Panel</h2><p style="font-size:10px;color:var(--pu);">EduScience</p></div><button class="redbtn" onclick="doLogout()" style="padding:5px 10px;font-size:11px;">Logout</button></div>`;
+
+  if(S.adminPage==="home"){
+    const tv=Object.values(subs).reduce((a,s)=>a+s.chapters.reduce((b,c)=>b+c.videos.length,0),0);
+    const tc=Object.values(subs).reduce((a,s)=>a+s.chapters.length,0);
+    html=hdr(null)+`<div style="padding:14px;">
+    <div class="card2" style="padding:16px;margin-bottom:16px;background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(168,85,247,.06));border-color:rgba(168,85,247,.18);"><p style="font-size:11px;color:var(--mt);margin-bottom:2px;">Logged in as</p><h3 style="font-size:18px;font-weight:800;">Administrator</h3><div style="display:flex;gap:20px;margin-top:12px;"><div style="text-align:center;"><div>📹</div><div style="font-size:18px;font-weight:800;">${tv}</div><div style="font-size:10px;color:var(--mt);">Videos</div></div><div style="text-align:center;"><div>📚</div><div style="font-size:18px;font-weight:800;">${tc}</div><div style="font-size:10px;color:var(--mt);">Chapters</div></div><div style="text-align:center;"><div>🎓</div><div style="font-size:18px;font-weight:800;">3</div><div style="font-size:10px;color:var(--mt);">Subjects</div></div></div></div>
+    <p style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Manage Subjects</p>
+    ${Object.entries(subs).map(([k,s])=>`<div class="card" onclick="S.adminPage='subject';S.adminSub='${k}';renderAdmin();" style="padding:14px;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;gap:12px;"><div style="width:42px;height:42px;border-radius:13px;background:${s.grad};display:flex;align-items:center;justify-content:center;font-size:19px;">${s.icon}</div><div style="flex:1;"><h4 style="font-size:14px;font-weight:700;">${s.label}</h4><p style="font-size:11px;color:var(--mt);">${s.chapters.length} chapters · ${s.chapters.reduce((a,c)=>a+c.videos.length,0)} videos</p></div>${svgChev()}</div>`).join("")}
+    </div>`;
+  } else if(S.adminPage==="subject"){
+    const s=subs[S.adminSub];
+    html=hdr(`S.adminPage='home';renderAdmin();`)+`<div style="padding:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;"><h3 style="font-size:15px;font-weight:700;">${s.label}</h3><button class="btn" onclick="S.adminPage='upload';S.adminChName='';S.adminLinks=[{title:'',url:''}];S.adminYtUrl='';S.adminPublished=false;renderAdmin();" style="width:auto;padding:9px 16px;font-size:13px;">${svgPlus()} Add Chapter</button></div>
+    ${s.chapters.length===0?`<div class="empty"><div class="emicon">📭</div><p>ଏଖନ chapter ନାହିଁ।</p></div>`:s.chapters.map(ch=>`
+    <div class="card" style="padding:14px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${ch.videos.length>0?10:0}px;"><div style="flex:1;"><h4 style="font-size:14px;font-weight:600;">${esc(ch.name)}</h4><p style="font-size:11px;color:var(--mt);">${ch.videos.length} videos</p></div><button class="redbtn" onclick="askConfirm('ch','${ch.id}','Delete Chapter?','&quot;${esc(ch.name)}&quot; ଓ ଏହାର ସମ୍ଭ videos delete ହୋଇଯିବ।')" style="padding:6px 10px;font-size:11px;">${svgTrash()} Delete</button></div>
+      ${ch.videos.map(v=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--bd);"><div style="width:52px;height:34px;border-radius:6px;background:var(--c3);overflow:hidden;flex-shrink:0;"><img src="${esc(v.thumb)}" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'"/></div><p style="flex:1;font-size:12px;color:var(--mt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(v.title)}</p><button class="redbtn" onclick="askConfirm('vid','${v.id}','Delete Video?','&quot;${esc(v.title)}&quot; permanently delete ହୋଇଯିବ।','${ch.id}')" style="padding:5px 8px;flex-shrink:0;">${svgTrash()}</button></div>`).join("")}
+    </div>`).join("")}
+    </div>`;
+  } else if(S.adminPage==="upload"){
+    const s=subs[S.adminSub];
+    html=hdr(`S.adminPage='subject';renderAdmin();`)+`<div style="padding:14px;">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">${s.label} — Add Chapter</h3>
+    <label style="font-size:12px;color:var(--mt);display:block;margin-bottom:7px;font-weight:600;">Chapter Name *</label>
+    <input id="ch-name" placeholder="Eg: Chapter 1 - Sets" value="${esc(S.adminChName)}" oninput="S.adminChName=this.value;" style="margin-bottom:14px;"/>
+    <div style="display:flex;background:var(--c2);border-radius:11px;padding:3px;margin-bottom:16px;gap:3px;">
+      <button onclick="S.adminMode='manual';renderAdmin();" style="flex:1;padding:10px;border-radius:8px;border:none;background:${S.adminMode==="manual"?"var(--c1)":"transparent"};color:${S.adminMode==="manual"?"var(--tx)":"var(--mt)"};font-family:'Sora',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">📝 Manual</button>
+      <button onclick="S.adminMode='youtube';renderAdmin();" style="flex:1;padding:10px;border-radius:8px;border:none;background:${S.adminMode==="youtube"?"var(--c1)":"transparent"};color:${S.adminMode==="youtube"?"var(--tx)":"var(--mt)"};font-family:'Sora',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">▶️ YouTube Playlist</button>
+    </div>
+    ${S.adminMode==="manual"?`
+    ${S.adminLinks.map((v,i)=>`<div class="card2" style="padding:12px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:11px;color:var(--or);font-weight:600;">Video #${i+1}</span>${i>0?`<button class="redbtn" onclick="S.adminLinks.splice(${i},1);renderAdmin();" style="padding:3px 7px;">${svgTrash()}</button>`:""}</div><input placeholder="Video Title *" value="${esc(v.title)}" oninput="S.adminLinks[${i}].title=this.value;" style="margin-bottom:8px;"/><input placeholder="YouTube URL" value="${esc(v.url)}" oninput="S.adminLinks[${i}].url=this.value;"/></div>`).join("")}
+    <button class="ghost" onclick="S.adminLinks.push({title:'',url:''});renderAdmin();" style="width:100%;justify-content:center;margin-bottom:14px;">${svgPlus()} Add Another Video</button>`:`
+    <label style="font-size:12px;color:var(--mt);display:block;margin-bottom:7px;font-weight:600;">YouTube Playlist URL *</label>
+    <input id="yt-url" placeholder="https://www.youtube.com/playlist?list=..." value="${esc(S.adminYtUrl)}" oninput="S.adminYtUrl=this.value;" style="margin-bottom:10px;"/>
+    <div class="card2" style="padding:12px;"><p style="font-size:12px;color:var(--mt);line-height:1.7;">📌 Playlist URL paste କଲେ automatically import ହେବ।</p></div>`}
+    <button class="btn" onclick="doPublish();" ${!S.adminChName.trim()?"disabled":""} style="margin-top:16px;background:${S.adminPublished?"var(--gn)":"var(--or)"};opacity:${S.adminChName.trim()?1:0.4};">
+      ${S.adminPublished?"✅ Published!":"⬆️ Publish Chapter"}
+    </button>
+    </div>`;
+  }
+  $("scr-admin").innerHTML=html;
+}
+
+// ─── ACTIONS ─────────────────────────────────────────────────────────────────
+function openSubject(k){ S.selSub=k; renderStudent(); }
+function openChapter(id){
+  const ch=S.subjects[S.selSub].chapters.find(c=>c.id===id);
+  if(ch){ S.selCh=ch; renderStudent(); }
+}
+function openVideo(id){
+  const v=S.selCh.videos.find(x=>x.id===id);
+  if(v){ S.selVid=v; S.watched[v.id]=true; S.showNote=false; renderStudent(); }
+}
+function toggleLike(){
+  const id=S.selVid.id;
+  if(S.liked[id]) delete S.liked[id]; else S.liked[id]=true;
+  renderVideoPage();
+}
+function saveDl(){ S.dl[S.selVid.id]=true; renderVideoPage(); }
+function toggleNote(){ S.showNote=!S.showNote; renderVideoPage(); }
+function saveNote(){
+  const t=document.getElementById("note-area")?.value||"";
+  S.notes[S.selVid.id]=t;
+  alert("Notes saved! ✅");
+}
+async function doSummarize(){
+  if(S.summing) return;
+  S.summing=true; renderVideoPage();
+  const lang=document.getElementById("lang-sel")?.value||"odia";
+  const lmap={odia:"Odia (ଓଡ଼ିଆ)",hindi:"Hindi (हिंदी)",english:"English"};
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:"Summarize in "+lmap[lang]+" the key concepts from: \""+S.selVid.title+"\" from chapter \""+S.selCh.name+"\". Write 4-5 clear sentences. Respond only in "+lmap[lang]+"."}]})});
+    const d=await r.json();
+    S.summs[S.selVid.id]=(d.content||[]).find(x=>x.type==="text")?.text||"Summary unavailable.";
+  }catch(_){ S.summs[S.selVid.id]="Internet ଚେକ କରନ୍ତୁ।"; }
+  S.summing=false; renderVideoPage();
+}
+function openQuiz(){
+  S.quizCh=S.selCh; S.quizCur=0; S.quizSel=null; S.quizRes=[]; S.quizDone=false;
+  renderQuiz(); $("modal-quiz").classList.add("open");
+}
+function renderQuiz(){
+  const qs=[{q:"CHSE ର full form:",opts:["Council of Higher Secondary Education","Central High School Exam","Class Higher Science Exam","Council of High School"],ans:0},{q:"Class 11 Science compulsory subjects:",opts:["Math only","Physics & Chemistry","Physics, Chemistry + Math/Bio","History"],ans:2}];
+  if(S.quizDone){
+    const sc=S.quizRes.filter(Boolean).length;
+    $("quiz-content").innerHTML=`<div class="pill"></div><div style="text-align:center;"><div style="font-size:60px;margin-bottom:12px;">${sc===qs.length?"🏆":sc>=qs.length/2?"🎯":"📚"}</div><h2 style="font-size:28px;font-weight:800;margin-bottom:6px;">${sc}/${qs.length}</h2><p style="color:var(--mt);margin-bottom:20px;font-size:13px;">${sc===qs.length?"Perfect! ✨":sc>=qs.length/2?"ଭଲ! ଆଉ ଅଭ୍ୟାସ":"ଆଉ ଥରେ videos ଦେଖ"}</p><button class="btn" onclick="$('modal-quiz').classList.remove('open');">Close</button></div>`;
+    return;
+  }
+  const q=qs[S.quizCur];
+  $("quiz-content").innerHTML=`<div class="pill"></div><div style="display:flex;justify-content:space-between;margin-bottom:12px;"><h3 style="font-size:15px;font-weight:700;">📝 Quiz</h3><span style="font-size:12px;color:var(--mt);">${S.quizCur+1}/${qs.length}</span></div><div class="pbar" style="margin-bottom:16px;"><div class="pfill" style="width:${((S.quizCur+1)/qs.length*100)}%;background:linear-gradient(90deg,#FF6B35,#FF9A5C);"></div></div><p style="font-size:14px;font-weight:600;margin-bottom:14px;line-height:1.55;">${esc(q.q)}</p><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">${q.opts.map((o,i)=>`<button class="qopt${S.quizSel!==null?(i===q.ans?" right":S.quizSel===i?" wrong":""):""}" onclick="quizPick(${i})" ${S.quizSel!==null?"disabled":""}><span style="margin-right:8px;opacity:.55;">${String.fromCharCode(65+i)}.</span>${esc(o)}</button>`).join("")}</div>${S.quizSel!==null?`<button class="btn" onclick="quizNext(${qs.length})">${S.quizCur+1<qs.length?"Next →":"See Results"}</button>`:""}`;
+}
+function quizPick(i){ if(S.quizSel===null){ S.quizSel=i; renderQuiz(); } }
+function quizNext(total){
+  const qs=[{ans:0},{ans:2}];
+  S.quizRes.push(S.quizSel===qs[S.quizCur].ans);
+  if(S.quizCur+1<total){ S.quizCur++; S.quizSel=null; renderQuiz(); }
+  else{ S.quizDone=true; renderQuiz(); }
+}
+function askConfirm(type,id,title,body,chId){
+  S.cfmData={type,id,title,body,chId};
+  $("cfm-title").textContent=title;
+  $("cfm-body").innerHTML=body;
+  $("modal-confirm").classList.add("open");
+}
+function setNavActive(nav){
+  document.querySelectorAll("#student-bnav .ni").forEach(b=>{ b.classList.toggle("on",b.dataset.nav===nav); b.style.color=b.dataset.nav===nav?"var(--or)":"var(--mt)"; });
+}
+function doPublish(){
+  if(!S.adminChName.trim()) return;
+  const sk=S.adminSub; let ch;
+  if(S.adminMode==="manual"){
+    const vids=S.adminLinks.filter(v=>v.title.trim()&&v.url.trim());
+    if(!vids.length) return;
+    ch={id:"ch_"+Date.now(),name:S.adminChName.trim(),videos:vids.map((v,i)=>{const id=ytId(v.url);return{id:"v_"+Date.now()+"_"+i,title:v.title.trim(),url:id?"https://www.youtube.com/embed/"+id:v.url.trim(),duration:"—:——",thumb:id?"https://img.youtube.com/vi/"+id+"/mqdefault.jpg":""};})};
+  } else {
+    const listId=(S.adminYtUrl.match(/list=([a-zA-Z0-9_-]+)/)||[])[1];
+    ch={id:"ch_"+Date.now(),name:S.adminChName.trim(),videos:[{id:"v_yt_"+Date.now(),title:S.adminChName.trim(),url:listId?"https://www.youtube.com/embed/videoseries?list="+listId:S.adminYtUrl.trim(),duration:"—:——",thumb:""}]};
+  }
+  S.subjects[sk].chapters.push(ch);
+  S.adminPublished=true; renderAdmin();
+  setTimeout(()=>{ S.adminPublished=false; S.adminPage="subject"; renderAdmin(); },1500);
+}
+function doLogout(){
+  S.student=null; S.selSub=null; S.selCh=null; S.selVid=null; S.nav="home"; S.adminPage="home";
+  showScreen("scr-login");
+}
+function updateChatColors(){
+  const gc={mathematics:"#FF6B35",physics:"#00C2E0",chemistry:"#A855F7"};
+  document.querySelectorAll(".chat-tab-btn").forEach(b=>{
+    const active=b.dataset.grp===S.chatGrp;
+    b.classList.toggle("active",active);
+    b.style.background=active?gc[b.dataset.grp]:"var(--c2)";
+    b.style.color=active?"#fff":"var(--mt)";
+  });
+  const sendBtn=$("btn-send");
+  if(sendBtn) sendBtn.style.background=gc[S.chatGrp];
+  const inp=$("chat-input");
+  if(inp) inp.placeholder=`Message ${S.chatGrp} group...`;
+}
+function renderChatMessages(){
+  const msgs=S.msgs.filter(m=>m.subject===S.chatGrp);
+  const container=$("chat-messages");
+  if(!container) return;
+  container.innerHTML=msgs.length===0?`<div style="text-align:center;color:var(--mt);font-size:13px;margin-top:50px;"><div style="font-size:40px;margin-bottom:10px;">💬</div>ଏହି group ରେ conversation ଆରମ୍ଭ କର!</div>`:
+    msgs.map(m=>{const mine=m.user===S.student?.name;return `<div style="display:flex;flex-direction:column;align-items:${mine?"flex-end":"flex-start"};">${!mine?`<p style="font-size:10px;color:var(--mt);margin-bottom:3px;margin-left:4px;">${esc(m.user)}</p>`:""}<div class="bubble ${mine?"me":"them"}">${esc(m.text)}</div><p style="font-size:10px;color:var(--mt);margin-top:2px;margin-left:4px;margin-right:4px;">${m.time}</p></div>`;}).join("");
+  container.scrollTop=container.scrollHeight;
+}
+
+// ─── EVENT BINDINGS ──────────────────────────────────────────────────────────
+$("btn-student").onclick=()=>showScreen("scr-setup");
+$("btn-open-gate").onclick=()=>{ $("modal-gate").classList.add("open"); setTimeout(()=>$("gate-pass").focus(),200); };
+$("btn-gate-cancel").onclick=()=>{ $("modal-gate").classList.remove("open"); $("gate-pass").value=""; $("gate-err").style.display="none"; };
+$("btn-gate-show").onclick=function(){ const inp=$("gate-pass"); inp.type=inp.type==="password"?"text":"password"; this.textContent=inp.type==="password"?"👁️":"🙈"; };
+$("gate-pass").onkeydown=(e)=>{ if(e.key==="Enter") $("btn-gate-enter").click(); };
+$("btn-gate-enter").onclick=()=>{
+  const p=$("gate-pass").value;
+  if(p===AP){
+    $("modal-gate").classList.remove("open");
+    $("gate-pass").value="";
+    S.adminPage="home"; renderAdmin();
+  } else {
+    $("gate-err").style.display="block";
+  }
+};
+
+$("btn-setup-done").onclick=()=>{
+  const n=$("inp-name").value.trim(), e=$("inp-email").value.trim(), p=$("inp-phone").value.trim();
+  if(n && e.includes("@") && p.replace(/\D/g,"").length>=10){
+    S.student={name:n,email:e,phone:p};
+    $("welcome-name").textContent=n.split(" ")[0];
+    showScreen("scr-welcome");
+  }
+};
+
+$("btn-welcome-go").onclick=()=>{
+  showScreen("scr-student"); S.nav="home"; renderStudent();
+};
+
+// Bottom nav — student screen
+document.querySelectorAll("#student-bnav .ni").forEach(b=>{ b.onclick=()=>{ if(b.dataset.nav==="chat"){ showScreen("scr-chat"); S.nav="chat"; renderChatMessages(); updateChatColors(); } else { showScreen("scr-student"); S.selSub=null; S.selCh=null; S.selVid=null; S.nav=b.dataset.nav; renderStudent(); } }; });
+
+// Bottom nav — chat screen
+document.querySelectorAll("#chat-bnav .ni").forEach(b=>{ b.onclick=()=>{ if(b.dataset.nav==="chat") return; showScreen("scr-student"); S.nav=b.dataset.nav; S.selSub=null; S.selCh=null; S.selVid=null; renderStudent(); }; });
+
+// Chat tabs
+document.querySelectorAll(".chat-tab-btn").forEach(b=>{ b.onclick=()=>{ S.chatGrp=b.dataset.grp; updateChatColors(); renderChatMessages(); }; });
+
+// Chat send
+function sendChatMsg(){
+  const inp=$("chat-input"); const txt=inp.value.trim();
+  if(!txt||!S.student) return;
+  S.msgs.push({id:Date.now(),user:S.student.name,text:txt,time:new Date().toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"}),subject:S.chatGrp});
+  inp.value=""; renderChatMessages();
+}
+$("btn-send").onclick=sendChatMsg;
+$("chat-input").onkeydown=(e)=>{ if(e.key==="Enter"){ e.preventDefault(); sendChatMsg(); } };
+
+// Confirm
+$("btn-cfm-no").onclick=()=>$("modal-confirm").classList.remove("open");
+$("btn-cfm-yes").onclick=()=>{
+  const d=S.cfmData; if(!d) return;
+  if(d.type==="ch"){ S.subjects[S.adminSub].chapters=S.subjects[S.adminSub].chapters.filter(c=>c.id!==d.id); }
+  if(d.type==="vid"){ const ch=S.subjects[S.adminSub].chapters.find(c=>c.id===d.chId); if(ch) ch.videos=ch.videos.filter(v=>v.id!==d.id); }
+  $("modal-confirm").classList.remove("open"); S.cfmData=null; renderAdmin();
+};
+
+</script>
+</body>
+</html>
